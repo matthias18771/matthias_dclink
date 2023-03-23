@@ -1,11 +1,14 @@
 
 # rival_dclink
-This resource synchronizes discord permissions to a FiveM server running es_extended
+This resource synchronizes discord permissions to a FiveM server running es_extended or qb-core
 
 
 
 
 ## FAQ
+
+#### How do I enable qb-core support?
+Set framework to "qbcore" in config.lua - this is the only step needed!
 
 #### How do I set this up?
 
