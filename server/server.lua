@@ -23,6 +23,18 @@ local adaptiveCardTemplate = {
     ["version"] =  "1.0"
 }
 
+function copyTable(table)
+    local newTable = {}
+    for k,v in pairs(table) do
+        if type(v) == "table" then
+            newTable[k] = copyTable(v)
+        else
+            newTable[k] = v
+        end
+    end
+    return newTable
+end
+
 RegisterNetEvent("playerConnecting", function(playerName, setKickReason, deferrals)
     deferrals.defer()
 
@@ -34,7 +46,7 @@ RegisterNetEvent("playerConnecting", function(playerName, setKickReason, deferra
         PerformHttpRequest(("https://discord.com/api/v10/guilds/%s/members/%s"):format(RIVAL.guildId, discordId), function(status, body, headers)
             if body ~= nil then
                 local userData = json.decode(body)
-                local card = adaptiveCardTemplate
+                local card = copyTable(adaptiveCardTemplate)
                 card.body[1].text = RIVAL.locales.welcomeBack:format(userData.user.username, userData.user.discriminator)
                 card.body[2].text = RIVAL.locales.deferMessage
                 deferrals.presentCard(card)
@@ -65,7 +77,7 @@ RegisterNetEvent("playerConnecting", function(playerName, setKickReason, deferra
                     deferrals.done()
                 end
             else
-                local card = adaptiveCardTemplate
+                local card = copyTable(adaptiveCardTemplate)
                 table.remove(card.body, 1)
                 card.body[1].text = RIVAL.locales.notInGuild
                 deferrals.presentCard(card)
@@ -74,7 +86,7 @@ RegisterNetEvent("playerConnecting", function(playerName, setKickReason, deferra
             end
         end, "GET", "", requestHeaders)
     else
-        local card = adaptiveCardTemplate
+        local card = copyTable(adaptiveCardTemplate)
         table.remove(card.body, 1)
         card.body[1].text = RIVAL.locales.discordNotFound
         deferrals.presentCard(card)
