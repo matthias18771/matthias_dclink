@@ -1,4 +1,5 @@
 RIVAL = {
+    framework = "esx", -- can be "qbcore" or "esx"
     botToken = "",
     guildId = "",
     enforceDiscordPermissions = true, -- This will enforce discord permission (player joins on the server, has superadmin in database, but no roles in guild, means he gets set to "user")

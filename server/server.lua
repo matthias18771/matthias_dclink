@@ -1,3 +1,5 @@
+local assignedGroup = {}
+
 local requestHeaders = {
     ["Authorization"] = "Bot " .. RIVAL.botToken,
     ["Content-Type"] = "application/json",
@@ -40,33 +42,45 @@ RegisterNetEvent("playerConnecting", function(playerName, setKickReason, deferra
 
     local discordId = GetPlayerIdentifierByType(source, "discord")
     local licenseId = GetPlayerIdentifierByType(source, "license")
+    local card = copyTable(adaptiveCardTemplate)
     if discordId ~= nil then
         discordId = discordId:sub(9)
         licenseId = licenseId:sub(9)
         PerformHttpRequest(("https://discord.com/api/v10/guilds/%s/members/%s"):format(RIVAL.guildId, discordId), function(status, body, headers)
             if body ~= nil then
                 local userData = json.decode(body)
-                local card = copyTable(adaptiveCardTemplate)
                 card.body[1].text = RIVAL.locales.welcomeBack:format(userData.user.username, userData.user.discriminator)
                 card.body[2].text = RIVAL.locales.deferMessage
                 deferrals.presentCard(card)
                 for k,v in pairs(RIVAL.roles) do
                     for i=1, #userData.roles do
                         if userData.roles[i] == v.roleId then
-                            MySQL.Async.execute("UPDATE users SET `group` = @group WHERE `identifier` = @identifier", {
-                                group = v.groupName,
-                                identifier = licenseId
-                            }, function()
+                            if RIVAL.framework == "esx" then
+                                MySQL.Async.execute("UPDATE users SET `group` = @group WHERE `identifier` = @identifier", {
+                                    group = v.groupName,
+                                    identifier = licenseId
+                                }, function()
+                                    card.body[2].text = (RIVAL.locales.authenticatedAsGroup):format(v.label)
+                                    deferrals.presentCard(card)
+                                    Wait(2000)
+                                    deferrals.done()
+                                end)
+                            elseif RIVAL.framework == "qbcore" then
+                                if assignedGroup[licenseId] then
+                                    ExecuteCommand(("remove_principal identifier.license:%s qbcore.%s"):format(licenseId, assignedGroup[licenseId]))
+                                end
+                                assignedGroup[licenseId] = v.groupName
+                                ExecuteCommand(("add_principal identifier.license:%s qbcore.%s"):format(licenseId, assignedGroup[licenseId]))
                                 card.body[2].text = (RIVAL.locales.authenticatedAsGroup):format(v.label)
                                 deferrals.presentCard(card)
                                 Wait(2000)
                                 deferrals.done()
-                            end)
+                            end
                             return
                         end
                     end
                 end
-                if RIVAL.enforceDiscordPermissions then
+                if RIVAL.enforceDiscordPermissions and RIVAL.framework == "esx" then
                     MySQL.Async.execute("UPDATE users SET `group` = @group WHERE `identifier` = @identifier", {
                         group = "user",
                         identifier = licenseId
@@ -77,7 +91,6 @@ RegisterNetEvent("playerConnecting", function(playerName, setKickReason, deferra
                     deferrals.done()
                 end
             else
-                local card = copyTable(adaptiveCardTemplate)
                 table.remove(card.body, 1)
                 card.body[1].text = RIVAL.locales.notInGuild
                 deferrals.presentCard(card)
@@ -86,7 +99,6 @@ RegisterNetEvent("playerConnecting", function(playerName, setKickReason, deferra
             end
         end, "GET", "", requestHeaders)
     else
-        local card = copyTable(adaptiveCardTemplate)
         table.remove(card.body, 1)
         card.body[1].text = RIVAL.locales.discordNotFound
         deferrals.presentCard(card)
