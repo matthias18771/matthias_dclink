@@ -18,6 +18,40 @@ Here's a video showing exactly how to do that: [Tutorial](https://www.youtube.co
 Join our discord: [Discord](https://discord.gg/Wt9RRxszJv)
 
 
+# Exports
+
+## Integrate this into your resources
+
+#### local inGuild, userData = getUserData(discordId)
+### Example
+```
+local donatorRole = "1080602993478615061"
+
+RegisterCommand("hello123", function()
+  local src = source
+  local discordId = GetPlayerIdentifierByType(src, "discord")
+  if discordId ~= nil then
+    discordId = discordId:sub(9)
+    local inGuild, userData = exports["rival_dclink"]:getUserData(discordId)
+    if inGuild then
+      for k,v in pairs(userData.roles) do
+        if v == donatorRole then
+          print("You are a donator!")
+          return
+        end
+      end
+      print("You are not a donator!")
+    else
+      print("You are not in the guild!")
+    end
+  else
+    print("You don't have a discord account linked!")
+  end
+end)
+```
+
+
+
 ## Authors
 
 - [@matthias-codes](https://www.github.com/matthias-codes)
@@ -28,4 +62,3 @@ Join our discord: [Discord](https://discord.gg/Wt9RRxszJv)
 ## License
 
 [MIT](https://choosealicense.com/licenses/mit/)
-
