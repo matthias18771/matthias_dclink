@@ -1,5 +1,5 @@
 
-# rival_dclink
+# matthias_dclink
 This resource synchronizes discord permissions to a FiveM server running es_extended or qb-core
 
 
@@ -32,7 +32,7 @@ RegisterCommand("hello123", function()
   local discordId = GetPlayerIdentifierByType(src, "discord")
   if discordId ~= nil then
     discordId = discordId:sub(9)
-    local inGuild, userData = exports["rival_dclink"]:getUserData(discordId)
+    local inGuild, userData = exports["matthias_dclink"]:getUserData(discordId)
     if inGuild then
       for k,v in pairs(userData.roles) do
         if v == donatorRole then
